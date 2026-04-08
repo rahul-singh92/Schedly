@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import Header from './components/Header';
+import NotesSection from './components/NotesSection';
+import CalendarSection from './components/CalendarSection';
 import NoteModal from './components/NoteModal';
 import { 
-  MONTHS, SHORT_MONTHS, DAYS, HERO_IMAGES, 
-  getDaysInMonth, getFirstDayOfMonth, dateKey, parseKey, 
-  compareDates, formatDisplayDate, loadNotes, saveNotesToLocal 
+  MONTHS, DAYS, HERO_IMAGES, getDaysInMonth, getFirstDayOfMonth, 
+  dateKey, parseKey, compareDates, loadNotes, saveNotesToLocal 
 } from './utils/helpers';
 import './assets/App.css';
 
@@ -11,15 +13,14 @@ export default function App() {
   const today = new Date();
   const todayStr = dateKey(today.getFullYear(), today.getMonth(), today.getDate());
 
-  // Theme State
   const [theme, setTheme] = useState(() => localStorage.getItem('wall-cal-theme') || 'light');
 
-  // Animation & Rendering State
+  // animation engine states
   const [displayDate, setDisplayDate] = useState({ year: today.getFullYear(), month: today.getMonth() });
   const [targetDate, setTargetDate] = useState(null); 
   const [animating, setAnimating] = useState(false);
-  const [flipClass, setFlipClass] = useState(''); 
-  const [flipDuration, setFlipDuration] = useState(800); 
+  const [slideClass, setSlideClass] = useState(''); 
+  const [slideDuration, setSlideDuration] = useState(800); 
 
   const [rangeStart, setRangeStart] = useState(null);
   const [rangeEnd, setRangeEnd] = useState(null);
@@ -34,7 +35,6 @@ export default function App() {
   const currentYear = animating && targetDate ? targetDate.year : displayDate.year;
   const heroImg = HERO_IMAGES[currentMonth];
 
-  // Persist theme and apply class to body
   useEffect(() => {
     localStorage.setItem('wall-cal-theme', theme);
     if (theme === 'dark') {
@@ -44,10 +44,9 @@ export default function App() {
     }
   }, [theme]);
 
-  useEffect(() => { 
-    saveNotesToLocal(notes); 
-  }, [notes]);
+  useEffect(() => { saveNotesToLocal(notes); }, [notes]);
 
+  // clean up dropdowns if user clicks randomly on the screen
   useEffect(() => {
     const closeDropdowns = () => {
       setShowYearPicker(false);
@@ -57,18 +56,15 @@ export default function App() {
     return () => document.removeEventListener('click', closeDropdowns);
   }, []);
 
-  const toggleTheme = () => {
-    setTheme(t => t === 'light' ? 'dark' : 'light');
-  };
+  const toggleTheme = () => setTheme(t => t === 'light' ? 'dark' : 'light');
 
-  // --- Dynamic Animation Logic ---
-  const triggerFlip = (newYear, newMonth) => {
+  const triggerSlide = (newYear, newMonth) => {
     if (animating) return; 
     if (newYear === displayDate.year && newMonth === displayDate.month) return;
 
     const monthDiff = (newYear - displayDate.year) * 12 + (newMonth - displayDate.month);
     const isMulti = Math.abs(monthDiff) > 1;
-    const duration = isMulti ? 2000 : 800; 
+    const duration = isMulti ? 2000 : 750; 
     
     let type = '';
     if (monthDiff > 1) type = 'multi-next';
@@ -77,38 +73,33 @@ export default function App() {
     else if (monthDiff === -1) type = 'prev';
 
     setTargetDate({ year: newYear, month: newMonth });
-    setFlipClass(`flip-${type}`);
-    setFlipDuration(duration);
+    setSlideClass(`slide-${type}`);
+    setSlideDuration(duration);
     setAnimating(true);
 
     setTimeout(() => {
       setDisplayDate({ year: newYear, month: newMonth });
       setTargetDate(null);
       setAnimating(false);
-      setFlipClass('');
+      setSlideClass('');
     }, duration); 
   };
 
   const handlePrevMonth = () => {
     const newMonth = displayDate.month === 0 ? 11 : displayDate.month - 1;
     const newYear = displayDate.month === 0 ? displayDate.year - 1 : displayDate.year;
-    triggerFlip(newYear, newMonth);
+    triggerSlide(newYear, newMonth);
   };
   
   const handleNextMonth = () => {
     const newMonth = displayDate.month === 11 ? 0 : displayDate.month + 1;
     const newYear = displayDate.month === 11 ? displayDate.year + 1 : displayDate.year;
-    triggerFlip(newYear, newMonth);
+    triggerSlide(newYear, newMonth);
   };
 
-  const jumpToDate = (y, m) => triggerFlip(y, m);
+  const jumpToDate = (y, m) => triggerSlide(y, m);
+  const handleGoToCurrent = () => jumpToDate(today.getFullYear(), today.getMonth());
 
-  // Jump to Current Real-World Date
-  const handleGoToCurrent = () => {
-    jumpToDate(today.getFullYear(), today.getMonth());
-  };
-
-  // --- Day Handling ---
   const handleDayClick = (y, m, d) => {
     if (animating) return; 
     const k = dateKey(y, m, d);
@@ -214,6 +205,7 @@ export default function App() {
     }
   };
 
+  // rendering the actual grid layout
   const renderCalendarPane = (year, month) => {
     const cells = buildCellsFor(year, month);
     return (
@@ -250,150 +242,27 @@ export default function App() {
     );
   };
 
-  const displayNotes = getDisplayNotes();
-
   return (
     <div className="app-container">
-      
-      {/* Theme Toggle Button */}
-      <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle Dark Mode">
-        {theme === 'dark' ? (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-          </svg>
-        ) : (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
-        )}
-      </button>
-
-      <svg width="0" height="0" style={{ position: 'absolute' }}>
-        <defs>
-          <clipPath id="diamond-curve-bottom" clipPathUnits="objectBoundingBox">
-            <path d="M 0,0 L 1,0 L 1,0.7 Q 0.5,1.1 0,0.7 Z" />
-          </clipPath>
-        </defs>
-      </svg>
-
-      <header className="header-wrapper">
-        <div className="header-bg-left"></div>
-        <div className="header-image-container">
-          <img className="hero-img" src={heroImg.url} alt="Monthly inspiration" />
-          <div className="hero-overlay">
-            <div className="hero-quote">{heroImg.quote}</div>
-          </div>
-        </div>
-
-        <div className="header-bg-right">
-          <div className="dropdown-wrapper" style={{ zIndex: showYearPicker ? 100 : 10 }} onClick={(e) => { e.stopPropagation(); setShowYearPicker(!showYearPicker); setShowMonthPicker(false); }}>
-            <div className="year-text">{currentYear} ▾</div>
-            {showYearPicker && (
-              <div className="custom-dropdown">
-                {Array.from({length: 11}, (_, i) => currentYear - 5 + i).map(y => (
-                  <div key={y} className="dropdown-item" onClick={() => jumpToDate(y, currentMonth)}>{y}</div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="month-diamond-container dropdown-wrapper" style={{ zIndex: showMonthPicker ? 100 : 10 }} onClick={(e) => { e.stopPropagation(); setShowMonthPicker(!showMonthPicker); setShowYearPicker(false); }}>
-            <div className="month-diamond">
-              <span>{SHORT_MONTHS[currentMonth]} ▾</span>
-            </div>
-            {showMonthPicker && (
-              <div className="custom-dropdown month-dropdown">
-                {MONTHS.map((m, i) => (
-                  <div key={m} className="dropdown-item" onClick={() => jumpToDate(currentYear, i)}>{m}</div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      <Header 
+        theme={theme} toggleTheme={toggleTheme} heroImg={heroImg} 
+        currentYear={currentYear} currentMonth={currentMonth}
+        showYearPicker={showYearPicker} setShowYearPicker={setShowYearPicker}
+        showMonthPicker={showMonthPicker} setShowMonthPicker={setShowMonthPicker}
+        jumpToDate={jumpToDate}
+      />
 
       <main className="main-content">
-        <section className="notes-section">
-          <div className="section-header">
-            <h2 className="section-title">Notes</h2>
-            <button className="icon-btn-add" onClick={openNewNote}>+ New</button>
-          </div>
+        <NotesSection 
+          openNewNote={openNewNote} noteFilter={noteFilter} setNoteFilter={setNoteFilter}
+          displayNotes={getDisplayNotes()} todayStr={todayStr} openNote={openNote}
+        />
 
-          <div className="notes-filters">
-            {['selected', 'month', 'year', 'all'].map(filter => (
-              <button 
-                key={filter} 
-                className={`filter-btn ${noteFilter === filter ? 'active' : ''}`}
-                onClick={() => setNoteFilter(filter)}
-              >
-                {filter === 'selected' ? 'Selection' : filter.charAt(0).toUpperCase() + filter.slice(1)}
-              </button>
-            ))}
-          </div>
-
-          <div className="notes-list">
-            {displayNotes.length === 0 ? (
-              <div className="empty-state">
-                No notes found.<br/>
-                <span>Click + New to add one.</span>
-              </div>
-            ) : (
-              displayNotes.map(note => {
-                const isToday = note.key === todayStr;
-                return (
-                  <div key={note.key} className={`note-card ${isToday ? 'current-day-note' : ''}`} onClick={() => openNote(note.key)}>
-                    {isToday && <div className="today-badge">Today</div>}
-                    <div className="note-card-title">{note.title || 'Untitled'}</div>
-                    <div className="note-card-date">{formatDisplayDate(note.key)}</div>
-                    {note.content && <div className="note-card-preview">{note.content}</div>}
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </section>
-
-        <section className="calendar-section perspective-wrapper" style={{ '--flip-dur': `${flipDuration}ms` }}>
-          
-          <div className="calendar-page static-bottom">
-            {renderCalendarPane(targetDate ? targetDate.year : displayDate.year, targetDate ? targetDate.month : displayDate.month)}
-          </div>
-
-          {animating && (
-            <>
-              {flipClass.includes('multi') && (
-                <>
-                  <div className={`calendar-page dummy-page ${flipClass} delay-2`}></div>
-                  <div className={`calendar-page dummy-page ${flipClass} delay-1`}></div>
-                </>
-              )}
-              
-              <div className={`calendar-page flipping-top ${flipClass}`}>
-                {renderCalendarPane(displayDate.year, displayDate.month)}
-              </div>
-            </>
-          )}
-
-          {(rangeStart || rangeEnd) && (
-            <div className="range-indicator">
-              <div className="range-pills">
-                {rangeStart && <span className="pill">{formatDisplayDate(rangeStart)}</span>}
-                {rangeStart && rangeEnd && <span className="arrow">→</span>}
-                {rangeEnd && <span className="pill">{formatDisplayDate(rangeEnd)}</span>}
-              </div>
-              <button className="clear-btn" onClick={() => { setRangeStart(null); setRangeEnd(null); }}>Clear Selection</button>
-            </div>
-          )}
-        </section>
-
+        <CalendarSection 
+          slideDuration={slideDuration} targetDate={targetDate} displayDate={displayDate}
+          animating={animating} slideClass={slideClass} renderCalendarPane={renderCalendarPane}
+          rangeStart={rangeStart} rangeEnd={rangeEnd} setRangeStart={setRangeStart} setRangeEnd={setRangeEnd}
+        />
       </main>
 
       <NoteModal modal={modal} setModal={setModal} saveNote={saveNote} deleteNote={deleteNote} />
