@@ -35,24 +35,30 @@ User notes and theme preferences are synced to the browser's `localStorage` via 
 
 ## Project Structure
 
-\`\`\`text
+```text
 /public
-  └── images/               # Store your 12 month images here (jan.jpg, feb.jpg...)
+  └── images/                  # Store your 12 month images here (jan.jpg, feb.jpg...)
+
 /src
   ├── assets/
-  │   └── App.css           # Global styles, variables, and animation keyframes
+  │   └── App.css              # Global styles, variables, and animation keyframes
+
   ├── components/
-  │   ├── Header.jsx        # Hero image, theme toggle, and dropdowns
-  │   ├── NotesSection.jsx  # Left-hand panel for managing and filtering notes
-  │   ├── CalendarSection.jsx # Right-hand panel with the grid and slide animations
-  │   └── NoteModal.jsx     # Pop-up UI for creating/editing notes
+  │   ├── Header.jsx           # Hero image, theme toggle, and dropdowns
+  │   ├── NotesSection.jsx     # Left-hand panel for managing and filtering notes
+  │   ├── CalendarSection.jsx  # Right-hand panel with calendar grid and animations
+  │   └── NoteModal.jsx        # Modal for creating and editing notes
+
   ├── utils/
-  │   └── helpers.js        # Pure functions, date logic, and constants
-  ├── App.jsx               # Main state controller and layout wrapper
-  └── main.jsx              # React entry point
-\`\`\`
+  │   └── helpers.js           # Utility functions, date logic, and constants
+
+  ├── App.js                   # Main app component (state + layout)
+  ├── index.js                 # React entry point
+  └── index.css                # Global base styles (optional)
+```
 
 ---
+
 
 ## How to Run Locally
 
