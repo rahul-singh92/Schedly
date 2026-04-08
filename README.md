@@ -1,70 +1,106 @@
-# Getting Started with Create React App
+# Interactive Wall Calendar
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A beautifully designed, interactive calendar application built with React. This project merges modern UI/UX principles with satisfying, physical-feeling interactions—including a custom 2D "page-tossing" animation engine, dynamic note-taking, and seamless dark/light mode support.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+* **Custom Sliding Animation Engine:** Flipping through months mimics the physical action of tossing pages or counting banknotes, complete with staggered multi-page cascade effects for long jumps in time.
+* **Persistent Note-Taking:** Click any date (or select a range) to add, edit, and manage notes. Data is saved locally so you never lose your thoughts.
+* **Dynamic Filtering:** Easily filter notes by the currently selected date range, the active month, the active year, or view all notes at once.
+* **Seamless Theming:** Includes a fully realized Bright Mode and a deep, eye-easing Night Mode, persisting to your preferences.
+* **Contextual Desktop "Wall" View:** On desktop, the calendar rests on a subtle wall texture with a deep drop-shadow. On mobile, it smartly flattens and stacks for a native app feel.
+* **Custom Geometry:** Utilizes inline SVGs and CSS `clip-path` for unique layouts, like the curved-bottom hero image and the diamond-shaped dropdowns.
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Technical & Design Choices
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 1. Zero-Dependency Animation
+Instead of relying on heavy JavaScript animation libraries (like Framer Motion or GSAP), the sliding animation engine is built entirely using **native CSS keyframes and transitions**, orchestrated by React state. 
+* **Why?** This ensures hardware-accelerated, buttery-smooth 60fps animations even on lower-end mobile devices, keeping the bundle size incredibly small.
 
-### `npm test`
+### 2. CSS Variable Architecture
+Theming is handled strictly through CSS Custom Properties (`:root` variables) toggled via a class on the `<body>` tag.
+* **Why?** This allows the browser to repaint the theme instantly without requiring React to re-render the entire component tree, eliminating "flash of unstyled content" (FOUC) and making the codebase highly maintainable.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 3. Component Modularity
+The application is broken down into specific, single-responsibility components (`Header.jsx`, `NotesSection.jsx`, `CalendarSection.jsx`). 
+* **Why?** The initial prototype was a single monolithic file. Separating concerns makes the code significantly easier to read, debug, and scale if new features (like backend syncing) are added later.
 
-### `npm run build`
+### 4. Local Storage Persistence
+User notes and theme preferences are synced to the browser's `localStorage` via React's `useEffect` hook.
+* **Why?** It provides an immediate, database-free way to ensure the app is fully functional and retains user data between sessions, keeping the architecture purely frontend for easy deployment.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Project Structure
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+\`\`\`text
+/public
+  └── images/               # Store your 12 month images here (jan.jpg, feb.jpg...)
+/src
+  ├── assets/
+  │   └── App.css           # Global styles, variables, and animation keyframes
+  ├── components/
+  │   ├── Header.jsx        # Hero image, theme toggle, and dropdowns
+  │   ├── NotesSection.jsx  # Left-hand panel for managing and filtering notes
+  │   ├── CalendarSection.jsx # Right-hand panel with the grid and slide animations
+  │   └── NoteModal.jsx     # Pop-up UI for creating/editing notes
+  ├── utils/
+  │   └── helpers.js        # Pure functions, date logic, and constants
+  ├── App.jsx               # Main state controller and layout wrapper
+  └── main.jsx              # React entry point
+\`\`\`
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## How to Run Locally
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+This project is built using **Create React App (CRA)**.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### 📋 Prerequisites
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Make sure you have the following installed on your machine:
 
-## Learn More
+* **Node.js** (recommended version: LTS)
+* **npm** (comes with Node.js)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Step-by-Step Setup
 
-### Code Splitting
+1. **Create a new React app (if starting fresh):**
+   Open your terminal and run:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+   ```bash
+   npx create-react-app schedly
+   ```
 
-### Analyzing the Bundle Size
+2. **Navigate into the project directory:**
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+   ```bash
+   cd schedly
+   ```
 
-### Making a Progressive Web App
+3. **Install dependencies (if not already installed):**
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+   ```bash
+   npm install
+   ```
 
-### Advanced Configuration
+4. **Start the development server:**
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+   ```bash
+   npm start
+   ```
 
-### Deployment
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### Running the App
 
-### `npm run build` fails to minify
+* After running `npm start`, your app will automatically open in your browser.
+* If it doesn’t, open:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+  ```
+  http://localhost:3000
+  ```
